@@ -1,5 +1,5 @@
 from PyQt5.QtWidgets import QWidget, QApplication, QLabel, QInputDialog, QPushButton
-from PyQt5.QtGui import QPixmap
+from PyQt5.QtGui import QPixmap, QFontMetrics
 from PyQt5.Qt import Qt
 import requests
 import sys
@@ -26,20 +26,23 @@ class ShowMap(QWidget):
                                    "border-width: 2px;"
                                    "border-radius: 10px;"
                                    "border-color: black;"
-                                   "font: bold 14px;")
+                                   "font: bold 12px;")
         self.address_text = None
+        self.address_only = None
         self.default_toponym_point = self.toponym_point = self.toponym = self.spn = self.default_spn = None
         self.par_l = 'map'
         self.get_name = ''
         self.scale_size = 0.05
         self.scale_ll = 0.05
+        self.show_post_index = False
+        self.btn_map = QPushButton('Show map', self)
+        self.btn_scale = QPushButton('Set Scale of Size', self)
+        self.btn_scale_ll = QPushButton("Self scale of movement", self)
+        self.btn_scheme = QPushButton("Set Scheme", self)
+        self.btn_reset = QPushButton("Reset point", self)
+        self.btn_post = QPushButton("Show PostIndex ({0})".format(self.show_post_index), self)
 
-        self.button = QPushButton('Show map', self)
-        self.button_scale = QPushButton('Set Scale of Size', self)
-        self.button_scale_ll = QPushButton("Self scale of movement", self)
-        self.button_spn = QPushButton("Set Scheme", self)
-        self.button_reset_point = QPushButton("Reset point", self)
-        buttons = [self.button, self.button_scale, self.button_scale_ll, self.button_spn, self.button_reset_point]
+        buttons = [self.btn_map, self.btn_scale, self.btn_scale_ll, self.btn_scheme, self.btn_reset, self.btn_post]
         for i in range(len(buttons)):
             buttons[i].setFocusPolicy(Qt.NoFocus)
             buttons[i].setGeometry(650, 50 * (1 + i) + 10 * i, 200, 50)
@@ -50,11 +53,12 @@ class ShowMap(QWidget):
                                      "border-color: black;"
                                      "font: bold 14px;")
 
-        self.button.clicked.connect(self.get_address)
-        self.button_scale.clicked.connect(self.set_scale)
-        self.button_scale_ll.clicked.connect(self.set_scale_ll)
-        self.button_spn.clicked.connect(self.set_par_l)
-        self.button_reset_point.clicked.connect(self.reset_point)
+        self.btn_map.clicked.connect(self.get_address)
+        self.btn_scale.clicked.connect(self.set_scale)
+        self.btn_scale_ll.clicked.connect(self.set_scale_ll)
+        self.btn_scheme.clicked.connect(self.set_par_l)
+        self.btn_reset.clicked.connect(self.reset_point)
+        self.btn_post.clicked.connect(self.set_post_index)
 
         self.show_pt = True
 
@@ -64,6 +68,17 @@ class ShowMap(QWidget):
             self.address_text = 'Address: '
             self.address.setText(self.address_text)
             self.get_image()
+
+    def set_post_index(self):
+        self.show_post_index = True if not self.show_post_index else False
+        self.btn_post.setText("Show PostIndex ({0})".format(self.show_post_index))
+        if not self.toponym:
+            return
+        if self.show_post_index and self.get_name and self.show_pt:
+            self.address_text = self.address.text() + ' ' + self.get_post_index()
+        else:
+            self.address_text = self.address_only
+        self.address.setText(self.address_text)
 
     def set_par_l(self):
         sat_options = ['sat', 'sat,skl', 'sat,trf,skl', 'sat,trf']
@@ -142,6 +157,15 @@ class ShowMap(QWidget):
             self.get_image()
             self.update()
 
+    def set_address_text(self):
+        text_size_finder = QFontMetrics(self.address.font())
+        text_size = text_size_finder.width(self.address_text)
+        if text_size > self.address.size().width():
+            self.address.resize(text_size + 10, self.address.size().height())
+        else:
+            self.address.resize(600, 35)
+        self.address.setText(self.address_text)
+
     def update(self):
         self.image.setPixmap(self.pixmap)
 
@@ -151,12 +175,22 @@ class ShowMap(QWidget):
             return
         self.get_name = valid[0]
         self.get_toponym(self.get_name)
+        if not self.toponym:
+            return
         self.get_coordinates(self.toponym)
         self.get_spn()
         self.show_pt = True
         self.get_image()
 
+    def get_post_index(self):
+        try:
+            return self.toponym["metaDataProperty"]["GeocoderMetaData"]['Address']['postal_code']
+        except KeyError:
+            return '(NO POST INDEX)'
+
     def get_image(self):
+        if not self.toponym:
+            return
         toponym_point = self.toponym_point
         par_l = self.par_l
         delta = self.spn
@@ -188,15 +222,26 @@ class ShowMap(QWidget):
             print(response, response.url)
             return
         json_object = response.json()
+        amount_results = json_object["response"]["GeoObjectCollection"]["metaDataProperty"]["GeocoderResponseMetaData"]
+        if not int(amount_results["found"]):
+            self.address.setText(f"request: {amount_results['request']}; found; {amount_results['found']}")
+            return
         self.toponym = json_object["response"]["GeoObjectCollection"]["featureMember"][0]["GeoObject"]
         self.address_text = self.toponym["metaDataProperty"]["GeocoderMetaData"]["Address"]["formatted"]
-        self.address.setText(self.address_text)
+        self.address_only = self.address_text
+        if self.show_post_index:
+            self.address_text = self.address_text + ' ' + self.get_post_index()
+        self.set_address_text()
 
     def get_coordinates(self, toponym):
+        if not self.toponym:
+            return
         self.toponym_point = tuple(map(float, toponym["Point"]["pos"].split()))
         self.default_toponym_point = self.toponym_point
 
     def get_spn(self):
+        if not self.toponym:
+            return
         envelope = self.toponym["boundedBy"]["Envelope"]
         lower_corner = tuple(map(float, envelope["lowerCorner"].split()))
         upper_corner = tuple(map(float, envelope["upperCorner"].split()))
