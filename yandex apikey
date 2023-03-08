@@ -1,0 +1,14 @@
+apikey = "40d1649f-0493-4b70-98ba-98533de7710b"
+
+format request for geocoder (documentation 'https://yandex.ru/dev/maps/geocoder/doc/desc/concepts/input_params.html'):
+https://geocode-maps.yandex.ru/1.x
+then keys (delimiter is '&')
+geocode=
+apikey=
+-------Template------
+begin = "https://geocode-maps.yandex.ru/1.x/?apikey=40d1649f-0493-4b70-98ba-98533de7710b"
+
+
+format request for Static API (documentation 'https://yandex.ru/dev/maps/staticapi/doc/1.x/dg/concepts/input_params.html'):
+https://static-maps.yandex.ru/1.x/?
+

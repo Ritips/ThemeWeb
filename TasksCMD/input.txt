@@ -1,0 +1,6 @@
+meridian null
+longitude 15
+landmark mountain
+state depressive
+speed high
+time 20
