@@ -2,6 +2,7 @@ from PyQt5.QtWidgets import QWidget, QApplication, QLabel, QInputDialog, QPushBu
 from PyQt5.QtGui import QPixmap, QFontMetrics
 from PyQt5.Qt import Qt
 import requests
+import math
 import sys
 
 
@@ -27,6 +28,7 @@ class ShowMap(QWidget):
                                    "border-radius: 10px;"
                                    "border-color: black;"
                                    "font: bold 12px;")
+        self.map_center = (325, 275)
         self.address_text = None
         self.address_only = None
         self.default_toponym_point = self.toponym_point = self.toponym = self.spn = self.default_spn = None
@@ -60,7 +62,24 @@ class ShowMap(QWidget):
         self.btn_reset.clicked.connect(self.reset_point)
         self.btn_post.clicked.connect(self.set_post_index)
 
+        self.setMouseTracking(True)
         self.show_pt = True
+
+    def mousePressEvent(self, event):
+        x, y = event.pos().x(), event.pos().y()
+        if not self.toponym_point:
+            return
+        if 25 < x < 625 and 50 < y < 500:
+            print(self.toponym_point, (x, y), self.spn)
+            print(self.toponym_point[0] * self.spn[0] * 600 / 360)
+            print(self.toponym_point[1] * self.spn[1] * 450 / 180)
+            lat = self.toponym_point[1]
+            lng = self.toponym_point[0]
+            sin_y = math.sin((lat * math.pi) / 180)
+            sin_y = min(max(sin_y, -0.9999), 0.9999)
+            some_num = self.spn[0] * 256 * (0.5 - math.log((1 + sin_y / (1 - sin_y)) / (4 * math.pi)))
+            another_num = self.spn[1] * 256 * (0.5 + lng / 360)
+            print(some_num, another_num)
 
     def reset_point(self):
         if self.show_pt and self.get_name:
@@ -81,7 +100,7 @@ class ShowMap(QWidget):
         self.address.setText(self.address_text)
 
     def set_par_l(self):
-        sat_options = ['sat', 'sat,skl', 'sat,trf,skl', 'sat,trf']
+        sat_options = ['sat', 'sat,skl', 'sat,skl,trf', 'sat,trf']
         map_options = ['map', 'map,skl', 'map,skl,trf', 'map,trf']
         options = map_options + sat_options
         valid = QInputDialog.getItem(self, 'Scheme', 'Sat Scheme', options)
