@@ -42,6 +42,18 @@ class ShowMap(QWidget):
         self.button_spn.clicked.connect(self.set_par_l)
         self.button_spn.setFocusPolicy(Qt.NoFocus)
 
+        self.button_reset_point = QPushButton("Reset point", self)
+        self.button_reset_point.setFocusPolicy(Qt.NoFocus)
+        self.button_reset_point.setGeometry(650, 290, 150, 50)
+        self.button_reset_point.clicked.connect(self.reset_point)
+
+        self.show_pt = True
+
+    def reset_point(self):
+        if self.show_pt and self.get_name:
+            self.show_pt = False
+            self.get_image()
+
     def set_par_l(self):
         sat_options = ['sat', 'sat,skl', 'sat,trf,skl', 'sat,trf']
         map_options = ['map', 'map,skl', 'map,skl,trf', 'map,trf']
@@ -130,6 +142,7 @@ class ShowMap(QWidget):
         self.get_toponym(self.get_name)
         self.get_coordinates(self.toponym)
         self.get_spn()
+        self.show_pt = True
         self.get_image()
 
     def get_image(self):
@@ -140,8 +153,9 @@ class ShowMap(QWidget):
             "ll": f"{toponym_point[0]},{toponym_point[1]}",
             "spn": f"{delta[0]},{delta[1]}",
             "l": par_l,
-            "pt": f"{self.default_toponym_point[0]},{self.default_toponym_point[1]},round"
         }
+        if self.show_pt:
+            map_params["pt"] = f"{self.default_toponym_point[0]},{self.default_toponym_point[1]},round"
         map_api_server = "http://static-maps.yandex.ru/1.x/"
         response = requests.get(map_api_server, params=map_params)
         if not response:
