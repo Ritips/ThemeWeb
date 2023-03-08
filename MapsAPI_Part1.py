@@ -1,5 +1,6 @@
 from PyQt5.QtWidgets import QWidget, QApplication, QLabel, QInputDialog, QPushButton
 from PyQt5.QtGui import QPixmap
+from PyQt5.Qt import Qt
 import requests
 import sys
 
@@ -15,40 +16,55 @@ class ShowMap(QWidget):
         self.image.setStyleSheet("background-color:white")
 
         self.pixmap = QPixmap()
-        self.map_image = None
+        self.default_toponym_point = self.toponym_point = self.toponym = self.spn = self.default_spn = None
         self.get_name = ''
-        self.toponym = None
-        self.toponym_point = None
-        self.spn = None
-        self.default_spn = None
-        self.scale = 0.05
-        self.button = QPushButton('Show map', self)
-        self.button.setGeometry(650, 50, 100, 50)
-        self.button.clicked.connect(self.get_address)
+        self.scale_size = 0.05
+        self.scale_ll = 0.05
 
-        self.button_scale = QPushButton('Set Scale', self)
-        self.button_scale.setGeometry(650, 110, 100, 50)
+        self.button = QPushButton('Show map', self)
+        self.button.setGeometry(650, 50, 150, 50)
+        self.button.clicked.connect(self.get_address)
+        self.button.setFocusPolicy(Qt.NoFocus)
+
+        self.button_scale = QPushButton('Set Scale of Size', self)
+        self.button_scale.setGeometry(650, 110, 150, 50)
         self.button_scale.clicked.connect(self.set_scale)
+        self.button_scale.setFocusPolicy(Qt.NoFocus)
+
+        self.button_scale_ll = QPushButton("Self scale of movement", self)
+        self.button_scale_ll.setGeometry(650, 170, 150, 50)
+        self.button_scale_ll.clicked.connect(self.set_scale_ll)
+        self.button_scale_ll.setFocusPolicy(Qt.NoFocus)
 
     def set_scale(self):
         valid = QInputDialog.getText(self, 'Scale', 'SetScale')
         if not valid[1]:
-            self.scale = 0.05
+            self.scale_size = 0.05
         else:
             try:
-                self.scale = float(valid[0].replace(',', '.'))
+                self.scale_size = float(valid[0].replace(',', '.'))
             except ValueError:
-                self.scale = 0.05
+                self.scale_size = 0.05
+
+    def set_scale_ll(self):
+        valid = QInputDialog.getText(self, 'Scale', 'SetScale')
+        if not valid[1]:
+            self.scale_ll = 0.05
+        else:
+            try:
+                self.scale_ll = float(valid[0].replace(',', '.'))
+            except ValueError:
+                self.scale_ll = 0.05
 
     def keyPressEvent(self, event):
         key = event.key()
-        if not self.spn:
-            return
         if key in (16777238, 16777239):
+            if not self.spn:
+                return
             if key == 16777238:  # PAGE_UP
                 x, y = self.spn
-                x -= self.scale
-                y -= self.scale
+                x -= self.scale_size
+                y -= self.scale_size
                 if x < 0:
                     x = 0
                 if y < 0:
@@ -56,13 +72,32 @@ class ShowMap(QWidget):
                 self.spn = (x, y)
             elif key == 16777239:  # PAGE_DOWN
                 x, y = self.spn
-                x += self.scale
-                y += self.scale
+                x += self.scale_size
+                y += self.scale_size
                 if x > self.default_spn[0] * 20:
-                    x -= self.scale
+                    x -= self.scale_size
                 if y > self.default_spn[1] * 20:
-                    y -= self.scale
+                    y -= self.scale_size
                 self.spn = (x, y)
+            self.get_image()
+            self.update()
+        if key in (16777235, 16777237, 16777234, 16777236):
+            if not self.toponym_point:
+                return
+            x, y = self.toponym_point
+            if key == 16777234:  # Key_Left
+                x -= self.scale_ll
+                if x < 0:
+                    x = self.scale_ll
+            elif key == 16777235:  # Key_Up
+                y += self.scale_ll
+            elif key == 16777236:  # Key_Right
+                x += self.scale_ll
+            elif key == 16777237:  # Key_Down
+                y -= self.scale_ll
+                if y < 0:
+                    y = self.scale_ll
+            self.toponym_point = (x, y)
             self.get_image()
             self.update()
 
@@ -70,7 +105,10 @@ class ShowMap(QWidget):
         self.image.setPixmap(self.pixmap)
 
     def get_address(self):
-        self.get_name = QInputDialog.getText(self, "Address", "Input address")[0]
+        valid = QInputDialog.getText(self, "Address", "Input address")
+        if not valid[1]:
+            return
+        self.get_name = valid[0]
         self.get_toponym(self.get_name)
         self.get_coordinates(self.toponym)
         self.get_spn()
