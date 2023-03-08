@@ -8,14 +8,26 @@ import sys
 class ShowMap(QWidget):
     def __init__(self):
         super(ShowMap, self).__init__()
-        self.setGeometry(100, 100, 800, 600)
+        self.setGeometry(500, 200, 900, 600)
         self.setWindowTitle('Map')
 
         self.image = QLabel('', self)
         self.image.setGeometry(25, 50, 600, 450)
-        self.image.setStyleSheet("background-color:white")
+        self.image.setStyleSheet("background-color: white;"
+                                 "border-style: outset;"
+                                 "border-width: 1px;"
+                                 "border-color: black;")
 
         self.pixmap = QPixmap()
+        self.address = QLabel('Address: ', self)
+        self.address.setGeometry(25, 10, 600, 35)
+        self.address.setStyleSheet("background-color: white;"
+                                   "border-style: outset;"
+                                   "border-width: 2px;"
+                                   "border-radius: 10px;"
+                                   "border-color: black;"
+                                   "font: bold 14px;")
+        self.address_text = None
         self.default_toponym_point = self.toponym_point = self.toponym = self.spn = self.default_spn = None
         self.par_l = 'map'
         self.get_name = ''
@@ -23,28 +35,25 @@ class ShowMap(QWidget):
         self.scale_ll = 0.05
 
         self.button = QPushButton('Show map', self)
-        self.button.setGeometry(650, 50, 150, 50)
-        self.button.clicked.connect(self.get_address)
-        self.button.setFocusPolicy(Qt.NoFocus)
-
         self.button_scale = QPushButton('Set Scale of Size', self)
-        self.button_scale.setGeometry(650, 110, 150, 50)
-        self.button_scale.clicked.connect(self.set_scale)
-        self.button_scale.setFocusPolicy(Qt.NoFocus)
-
         self.button_scale_ll = QPushButton("Self scale of movement", self)
-        self.button_scale_ll.setGeometry(650, 170, 150, 50)
-        self.button_scale_ll.clicked.connect(self.set_scale_ll)
-        self.button_scale_ll.setFocusPolicy(Qt.NoFocus)
-
         self.button_spn = QPushButton("Set Scheme", self)
-        self.button_spn.setGeometry(650, 230, 150, 50)
-        self.button_spn.clicked.connect(self.set_par_l)
-        self.button_spn.setFocusPolicy(Qt.NoFocus)
-
         self.button_reset_point = QPushButton("Reset point", self)
-        self.button_reset_point.setFocusPolicy(Qt.NoFocus)
-        self.button_reset_point.setGeometry(650, 290, 150, 50)
+        buttons = [self.button, self.button_scale, self.button_scale_ll, self.button_spn, self.button_reset_point]
+        for i in range(len(buttons)):
+            buttons[i].setFocusPolicy(Qt.NoFocus)
+            buttons[i].setGeometry(650, 50 * (1 + i) + 10 * i, 200, 50)
+            buttons[i].setStyleSheet("background-color: white;"
+                                     "border-style: outset;"
+                                     "border-width: 2px;"
+                                     "border-radius: 10px;"
+                                     "border-color: black;"
+                                     "font: bold 14px;")
+
+        self.button.clicked.connect(self.get_address)
+        self.button_scale.clicked.connect(self.set_scale)
+        self.button_scale_ll.clicked.connect(self.set_scale_ll)
+        self.button_spn.clicked.connect(self.set_par_l)
         self.button_reset_point.clicked.connect(self.reset_point)
 
         self.show_pt = True
@@ -52,6 +61,8 @@ class ShowMap(QWidget):
     def reset_point(self):
         if self.show_pt and self.get_name:
             self.show_pt = False
+            self.address_text = 'Address: '
+            self.address.setText(self.address_text)
             self.get_image()
 
     def set_par_l(self):
@@ -178,6 +189,8 @@ class ShowMap(QWidget):
             return
         json_object = response.json()
         self.toponym = json_object["response"]["GeoObjectCollection"]["featureMember"][0]["GeoObject"]
+        self.address_text = self.toponym["metaDataProperty"]["GeocoderMetaData"]["Address"]["formatted"]
+        self.address.setText(self.address_text)
 
     def get_coordinates(self, toponym):
         self.toponym_point = tuple(map(float, toponym["Point"]["pos"].split()))
