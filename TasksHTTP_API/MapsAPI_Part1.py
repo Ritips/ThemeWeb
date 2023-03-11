@@ -70,16 +70,7 @@ class ShowMap(QWidget):
         if not self.toponym_point:
             return
         if 25 < x < 625 and 50 < y < 500:
-            print(self.toponym_point, (x, y), self.spn)
-            print(self.toponym_point[0] * self.spn[0] * 600 / 360)
-            print(self.toponym_point[1] * self.spn[1] * 450 / 180)
-            lat = self.toponym_point[1]
-            lng = self.toponym_point[0]
-            sin_y = math.sin((lat * math.pi) / 180)
-            sin_y = min(max(sin_y, -0.9999), 0.9999)
-            some_num = self.spn[0] * 256 * (0.5 - math.log((1 + sin_y / (1 - sin_y)) / (4 * math.pi)))
-            another_num = self.spn[1] * 256 * (0.5 + lng / 360)
-            print(some_num, another_num)
+            pass
 
     def reset_point(self):
         if self.show_pt and self.get_name:
