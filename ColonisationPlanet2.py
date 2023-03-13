@@ -26,16 +26,17 @@ def list_prof(list_param):
 
 @app.route('/answer')
 @app.route('/auto_answer')
-def auto_answer():
+def auto_answer(dictionary=None):
     param = dict()
-    param["title"] = "Questionnaire"
-    param["surname"] = 'unknown'
-    param["name"] = 'unknown'
-    param["education"] = 'unknown'
-    param["profession"] = 'unknown'
-    param["sex"] = 'unknown'
-    param["motivation"] = 'unknown'
-    param["ready"] = 'unknown'
+    unk = 'unknown'
+    param["title"], param["surname"], param["name"], param["education"] = "Questionnaire", unk, unk, unk
+    param["education"], param["profession"], param["sex"], param["motivation"], param["ready"] = unk, unk, unk, unk, unk
+    if dictionary:
+        for key in param:
+            try:
+                param[key] = dictionary[key]
+            except KeyError:
+                pass
     return render_template("auto_answer.html", **param)
 
 
