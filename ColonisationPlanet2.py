@@ -15,6 +15,8 @@ def first_sample(title, prof):
     return render_template('base.html', **param)
 
 
+
+
 @app.route('/list_prof/<list_param>')
 def list_prof(list_param):
     param = dict()
