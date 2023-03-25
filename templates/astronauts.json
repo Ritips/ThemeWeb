@@ -1,0 +1,26 @@
+{
+  "astronaut1": {
+      "Name": "Jack",
+      "Surname": "Black",
+      "photo": "/static/img/pers1.jpg",
+      "profs": [
+        "engineer-explorer", "pilot", "builder", "doctor"
+      ]
+    },
+  "astronaut2": {
+      "Name": "Mark",
+      "Surname": "Raven",
+      "photo": "/static/img/pers2.jpg",
+      "profs": [
+        "radiation protection specialist", "pilot"
+      ]
+    },
+  "astronaut3": {
+      "Name": "Jacob",
+      "Surname": "Freeman",
+      "photo": "/static/img/pers3.jpg",
+      "profs": [
+        "cyber engineer", "engineer in life providing", "pilot"
+      ]
+    }
+}

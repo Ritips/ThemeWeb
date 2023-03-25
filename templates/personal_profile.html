@@ -1,0 +1,13 @@
+{% extends "main.html" %}
+
+{% block content %}
+{% set key = keys | random %}
+{% set personal_data = data[key] %}
+{% set name = personal_data["Name"] %}
+{% set surname = personal_data["Surname"] %}
+{% set photo_src = personal_data["photo"] %}
+{% set profs = personal_data["profs"] | list | join("; ") %}
+<h2>{{ name }} {{ surname }}</h2>
+<img src="{{ photo_src }}" alt="{{ photo_src }}" align="center">
+<p>{{ profs }}</p>
+{% endblock %}

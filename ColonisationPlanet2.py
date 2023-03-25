@@ -1,8 +1,9 @@
 import random
 import os
-from flask import url_for, Flask, render_template, redirect, request
+import json
+from flask import url_for, Flask, render_template, redirect
 from flask_wtf import FlaskForm
-from wtforms import StringField, PasswordField, BooleanField, SubmitField, IntegerField
+from wtforms import PasswordField, SubmitField, IntegerField
 from flask_wtf.file import FileRequired, FileField, FileAllowed
 from wtforms.validators import DataRequired
 from werkzeug.utils import secure_filename
@@ -68,10 +69,7 @@ class LoginForm(FlaskForm):
 
 
 class ImageForm(FlaskForm):
-    print('image form')
     image = FileField("Add image", validators=[FileRequired(), FileAllowed(['jpg', 'png'], 'Image only')])
-    print(image)
-
 
 
 @app.route('/login', methods=['GET', 'POST'])
@@ -113,13 +111,20 @@ def gallery():
     form = ImageForm()
     if form.validate_on_submit():
         upload_file = form.image.data
-
         filename = secure_filename(upload_file.filename)
-        print(upload_file.save(os.path.join('static/img/scenery', filename)))
+        upload_file.save(os.path.join('static/img/scenery', filename))
         return redirect('/galery')
     images = list(os.walk('static/img/scenery'))[0][-1]
     acceptable_files = list(filter(lambda x: x.split('.')[-1] in ("png", "jpg"), images))
     return render_template('scenery.html', images=acceptable_files, title="Red Planet", form=form)
+
+
+@app.route('/member')
+def personal_profile():
+    with open('templates/astronauts.json', 'r') as f_read:
+        data = json.load(f_read)
+
+    return render_template("personal_profile.html", data=data, keys=list(data))
 
 
 if __name__ == '__main__':
