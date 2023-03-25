@@ -1,3 +1,5 @@
+import random
+
 from flask import url_for, Flask, render_template, redirect
 from flask_wtf import FlaskForm
 from wtforms import StringField, PasswordField, BooleanField, SubmitField, IntegerField
@@ -74,6 +76,21 @@ def show_success():
 def distribution():
     list_astronauts = ['Garry', "Peter", "Jack", "Mark", "Teddy"]
     return render_template('distribution.html', list_astronauts=list_astronauts)
+
+
+@app.route('/table/<sex>/<age>')
+def suggest_view_cabin(sex, age):
+    try:
+        age = int(age)
+    except ValueError:
+        age = -1
+    if sex == "male":
+        color = random.choice(["#0000FF", " #42AAFF", "#78DBE2", "#6A5ACD", "#5D0E6", "#ABCDEF", "#6495ED"])
+    elif sex == "female":
+        color = random.choice(["#ff00ff", "#8a2be2", "#4b0082", "#9400d3", "#9932cc", "#ee82ee", "#800080"])
+    else:
+        color = 'bad param'
+    return render_template('suggest_cabin.html', age=age, color=color)
 
 
 if __name__ == '__main__':

@@ -1,0 +1,25 @@
+{% extends "main.html" %}
+
+{% block content %}
+<h2>View Cabin</h2>
+<table width="100%" style="text-align: center; border-spacing: 10px; border-color: black; border-style: solid">
+   <tr>
+       <td bgcolor="grey">Wall color</td>
+       <td bgcolor="grey">Emblem</td>
+   </tr>
+    <tr>
+        {% if color != "bad param" %}
+            <td width="50%" bgcolor="{{ color }}"></td>
+        {% else %}
+            <td bgcolor="black" width="50%"><img src="/static/img/pers3.jpg" width="100%"></td>
+        {% endif %}
+        {% if age < 0 %}
+            <td width="50%"><img src="/static/img/badParam.png" width="100%"></td>
+        {% elif age < 21 %}
+            <td width="50%"><img src="/static/img/pers1.jpg" width="100%"></td>
+        {% else %}
+            <td width="50%"><img src="/static/img/pers2.jpg" width="100%"></td>
+        {% endif %}
+    </tr>
+ </table>
+{% endblock %}
