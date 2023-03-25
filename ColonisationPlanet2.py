@@ -1,12 +1,20 @@
 import random
-
-from flask import url_for, Flask, render_template, redirect
+import os
+from flask import url_for, Flask, render_template, redirect, request
 from flask_wtf import FlaskForm
 from wtforms import StringField, PasswordField, BooleanField, SubmitField, IntegerField
+from flask_wtf.file import FileRequired, FileField, FileAllowed
 from wtforms.validators import DataRequired
+from werkzeug.utils import secure_filename
 
 app = Flask(__name__)
+UPLOAD_FOLDER = '/static/img/scenery'
 app.config["SECRET_KEY"] = 'yandexlyceum_secret_key'
+app.config["UPLOAD_FOLDER"] = UPLOAD_FOLDER
+
+
+def allowed_file(filename):
+    return '.' in filename and filename.split('.')[-1].lower() in ('txt', 'pdf', 'png', 'jpg', 'jpeg', 'gif')
 
 
 @app.route('/training/<prof>')
@@ -59,6 +67,13 @@ class LoginForm(FlaskForm):
     submit = SubmitField('Submit')
 
 
+class ImageForm(FlaskForm):
+    print('image form')
+    image = FileField("Add image", validators=[FileRequired(), FileAllowed(['jpg', 'png'], 'Image only')])
+    print(image)
+
+
+
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     form = LoginForm()
@@ -91,6 +106,20 @@ def suggest_view_cabin(sex, age):
     else:
         color = 'bad param'
     return render_template('suggest_cabin.html', age=age, color=color)
+
+
+@app.route('/galery', methods=['GET', "POST"])
+def gallery():
+    form = ImageForm()
+    if form.validate_on_submit():
+        upload_file = form.image.data
+
+        filename = secure_filename(upload_file.filename)
+        print(upload_file.save(os.path.join('static/img/scenery', filename)))
+        return redirect('/galery')
+    images = list(os.walk('static/img/scenery'))[0][-1]
+    acceptable_files = list(filter(lambda x: x.split('.')[-1] in ("png", "jpg"), images))
+    return render_template('scenery.html', images=acceptable_files, title="Red Planet", form=form)
 
 
 if __name__ == '__main__':
