@@ -1,6 +1,10 @@
-from flask import url_for, Flask, render_template
+from flask import url_for, Flask, render_template, redirect
+from flask_wtf import FlaskForm
+from wtforms import StringField, PasswordField, BooleanField, SubmitField, IntegerField
+from wtforms.validators import DataRequired
 
 app = Flask(__name__)
+app.config["SECRET_KEY"] = 'yandexlyceum_secret_key'
 
 
 @app.route('/training/<prof>')
@@ -10,7 +14,7 @@ def first_sample(prof):
     if prof == "physician":
         param["photo"] = url_for('static', filename=f'img/Mars.jpg')
     elif prof == "engineer":
-        param["photo"] = url_for('static', filename=f'img/saved_image.jpg')
+        param["photo"] = url_for('static', filename=f'img/engineer_sim.jpg')
     return render_template('base.html', **param)
 
 
@@ -43,6 +47,33 @@ def auto_answer(dictionary=None):
             except KeyError:
                 pass
     return render_template("auto_answer.html", **param)
+
+
+class LoginForm(FlaskForm):
+    id_astronaut = IntegerField("id astronaut", validators=[DataRequired()])
+    password_astronaut = PasswordField("Astronaut's password", validators=[DataRequired()])
+    id_captain = IntegerField('id captain', validators=[DataRequired()])
+    password_captain = PasswordField("Captain's password", validators=[DataRequired()])
+    submit = SubmitField('Submit')
+
+
+@app.route('/login', methods=['GET', 'POST'])
+def login():
+    form = LoginForm()
+    if form.validate_on_submit():
+        return redirect('/success')
+    return render_template('double_defence.html', title='Authorisation', form=form)
+
+
+@app.route('/success')
+def show_success():
+    return 'Success'
+
+
+@app.route('/distribution')
+def distribution():
+    list_astronauts = ['Garry', "Peter", "Jack", "Mark", "Teddy"]
+    return render_template('distribution.html', list_astronauts=list_astronauts)
 
 
 if __name__ == '__main__':
