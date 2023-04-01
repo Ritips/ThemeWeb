@@ -1,6 +1,6 @@
 import sqlalchemy
 from sqlalchemy import orm
-from db_session import SqAlchemyBase
+from .db_session import SqAlchemyBase
 
 
 class Jobs(SqAlchemyBase):

@@ -3,6 +3,10 @@ import datetime
 from datetime import datetime as dt
 from data.mars_user import User
 from data.mars_jobs import Jobs
+from flask import Flask, render_template
+
+app = Flask(__name__)
+app.config["SECRET_KEY"] = 'yandex_lyceum_secret_key'
 
 
 def add_person(db_sess, surname, name, age, position, speciality, address, email):
@@ -70,10 +74,24 @@ def task_first_job_part2(db_sess):
                 work_size=work_size, start_date=start_date, is_finished=is_finished, collaborators=collaborators)
 
 
-def main():
-    db_session.global_init('mars_explorer.db')
+def execute_jobs(filename):  # execute_example
+    db_session.global_init(filename)
     db_sess = db_session.create_session()
-    task_add_captain_part2(db_sess)
+    for user in db_sess.query(User).filter(User.address == "module_1",
+                                           User.speciality.notlike("%engineer%"), User.position.notlike("%engineer%")):
+        print(user.id)
+
+
+@app.route('/')
+def magazine_jobs():
+    db_sess = db_session.create_session()
+    jobs = db_sess.query(Jobs)
+    return render_template('magazine_jobs.html', title="MAGAZINE JOBS", elements=jobs)
+
+
+def main():
+    db_session.global_init('db/mars_explorer.db')
+    app.run()
 
 
 if __name__ == '__main__':

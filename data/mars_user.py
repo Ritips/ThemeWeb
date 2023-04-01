@@ -1,6 +1,6 @@
 import sqlalchemy
 from sqlalchemy import orm
-from db_session import SqAlchemyBase
+from .db_session import SqAlchemyBase
 
 
 class User(SqAlchemyBase):
@@ -18,3 +18,6 @@ class User(SqAlchemyBase):
     modified_date = sqlalchemy.Column(sqlalchemy.DateTime)
 
     jobs = orm.relationship("Jobs", back_populates="user")
+
+    def __repr__(self):
+        return f'<Colonist> {self.id} {self.surname} {self.name}'

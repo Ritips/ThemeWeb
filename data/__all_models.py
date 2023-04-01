@@ -1,2 +1,2 @@
-from . import users
-from . import news
+from . import mars_user
+from . import mars_jobs
