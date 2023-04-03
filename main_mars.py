@@ -12,18 +12,15 @@ app.config["SECRET_KEY"] = 'yandex_lyceum_secret_key'
 
 
 def add_person(db_sess, surname, name, age, position, speciality, address, email):
-    user = User()
-    user.surname, user.name, user.age, user.position = surname, name, age, position
-    user.speciality, user.address, user.email = speciality, address, email
+    user = User(surname=surname, name=name, age=age, position=position, speciality=speciality, address=address,
+                email=email, modified_date=datetime.datetime.now())
     db_sess.add(user)
     db_sess.commit()
 
 
 def add_job(db_sess, team_leader, description_job, work_size, collaborators, start_date=dt.now(), is_finished=False):
-    job = Jobs()
-    job.team_leader, job.job, job.work_size = team_leader, description_job, work_size
-    job.collaborators, job.start_date, is_finished = collaborators, start_date, is_finished
-    job.end_date = start_date + datetime.timedelta(hours=work_size)
+    job = Jobs(team_leader=team_leader, job=description_job, work_size=work_size, collaborators=collaborators,
+               start_date=dt.now(), is_finished=is_finished, end_date=start_date + datetime.timedelta(hours=work_size))
     db_sess.add(job)
     db_sess.commit()
 
