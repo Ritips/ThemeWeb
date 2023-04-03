@@ -19,6 +19,7 @@ class User(SqAlchemyBase):
     modified_date = sqlalchemy.Column(sqlalchemy.DateTime)
 
     jobs = orm.relationship("Jobs", back_populates="user")
+    departments = orm.relationship("Department", back_populates="user")
 
     def __repr__(self):
         return f'<Colonist> {self.id} {self.surname} {self.name}'
