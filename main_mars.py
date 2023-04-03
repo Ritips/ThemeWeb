@@ -4,6 +4,7 @@ from datetime import datetime as dt
 from data.mars_user import User
 from data.mars_jobs import Jobs
 from flask import Flask, render_template
+from forms.mars_user import RegisterMarsForm
 
 app = Flask(__name__)
 app.config["SECRET_KEY"] = 'yandex_lyceum_secret_key'
@@ -89,9 +90,39 @@ def magazine_jobs():
     return render_template('magazine_jobs.html', title="MAGAZINE JOBS", elements=jobs)
 
 
+@app.route('/register', methods=["GET", "POST"])
+def registration_user():
+    form = RegisterMarsForm()
+    if form.validate_on_submit():
+        if form.password.data != form.repeat_password.data:
+            return render_template("mars_register.html", form=form,
+                                   title="Registration", message="Password mismatch")
+        db_sess = db_session.create_session()
+        if db_sess.query(User).filter(User.email == form.email.data).first():
+            return render_template("mars_register.html", form=form,
+                                   title="Registration", message="User already exists")
+        user = User(name=form.name.data, surname=form.surname.data,
+                    age=form.age.data, position=form.position.data,
+                    speciality=form.speciality.data, address=form.address.data,
+                    email=form.email.data, modified_date=datetime.datetime.now())
+        user.set_password(form.password.data)
+        db_sess.add(user)
+        db_sess.commit()
+        return "Success"
+    return render_template("mars_register.html", form=form, title="Registration")
+
+
 def main():
     db_session.global_init('db/mars_explorer.db')
     app.run()
+
+
+def execute(filename):
+    db_session.global_init(filename)
+    db_sess = db_session.create_session()
+    db_sess.query(User).filter(User.age >= 21, User.address == 'module_1').\
+        update({User.address: 'module_3'}, synchronize_session=False)
+    db_sess.commit()
 
 
 if __name__ == '__main__':
