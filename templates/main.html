@@ -11,14 +11,16 @@
 </head>
 <body>
     {% if current_user.is_authenticated %}
-    <a class="navbar-brand" style="color: red; margin:90%;" href="/logout">{{ current_user.name }} {{ current_user.surname }}</a>
+    <h1 style="background-color: #dcdfe3">Mission Colonisation Mars
+        <a class="navbar-brand" style="color: black; margin-left: 20%; margin-right: 20%; font-size: 15px" href="/logout">{{ current_user.name }} {{ current_user.surname }}</a>
+        <a style="font-size: 15px; margin-left: 15%; margin-right: 5%">Mars one</a>
+    </h1>
     {% else %}
-    <p align="right">
-        <a class="btn btn-primary " href="/register">Sign up</a>
-        <a class="btn btn-success" href="/login">Sign in</a>
-    </p>
+    <h1 style="background-color: #dcdfe3">Mission Colonisation Mars
+        <a class="btn btn-primary" style="margin-left: 60%; background-color: #2916b8" href="/register">Sign up</a>
+        <a class="btn btn-success" style="background-color:#087537" href="/login">Sign in</a>
+    </h1>
     {% endif %}
-    <h1>Mission Colonisation Mars</h1>
     <h4 class="alert alert-light">Apple trees will blossom there</h4>
 <main role="main" class="container">
     {% block content %}{% endblock %}
