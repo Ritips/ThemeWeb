@@ -175,6 +175,19 @@ def edit_job(job_id):
     return render_template('mars_add_job.html', title="Edit job", form=form)
 
 
+@app.route('/deletejob/<int:job_id>', methods=["GET", 'POST'])
+@login_required
+def delete_job(job_id):
+    db_sess = db_session.create_session()
+    jobs = db_sess.query(Jobs).filter(Jobs.id == job_id).first()
+    if jobs and (jobs.user.id == flask_login.current_user.id or flask_login.current_user.id == 1):
+        db_sess.delete(jobs)
+        db_sess.commit()
+    else:
+        abort(404)
+    return redirect('/')
+
+
 def main():
     db_session.global_init('db/mars_explorer.db')
     app.run()
