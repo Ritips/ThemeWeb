@@ -3,7 +3,12 @@
 {% block content %}
 <h2 align="center">Works Log</h2>
 {% if current_user.is_authenticated %}
-<a class="btn btn-secondary" href="/add_job" style="margin-top: 1%; margin-bottom: 1%">Add job</a>
+<div>
+    <a class="btn btn-secondary" href="/add_job" style="margin-top: 1%; margin-bottom: 1%">Add job</a>
+    <a class="btn btn-secondary" href="/departments" style="margin-top: 1%, margin-bottom: 1%">Back to Departments</a>
+</div>
+{% else %}
+<a class="btn btn-secondary" href="/departments" style="margin-top: 1%, margin-bottom: 1%">Back to Departments</a>
 {% endif %}
 {% for item in elements %}
     <h3 align="left" >Action #{{ loop.index }}</h3>

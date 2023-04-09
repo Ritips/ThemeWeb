@@ -11,6 +11,7 @@ from flask import request, make_response, session, redirect, abort
 from flask_login import LoginManager, login_user, login_required, logout_user
 from forms.mars_loginform import LoginForm
 from forms.mars_job import JobForm
+from forms.mars_department import DepartmentForm
 
 app = Flask(__name__)
 app.config["SECRET_KEY"] = 'yandex_lyceum_secret_key'
@@ -186,6 +187,73 @@ def delete_job(job_id):
     else:
         abort(404)
     return redirect('/')
+
+
+@app.route('/departments')
+def show_departments():
+    db_sess = db_session.create_session()
+    departments = db_sess.query(Department).all()
+    return render_template('mars_departments.html', elements=departments, title="List of Departments",
+                           current_user=flask_login.current_user)
+
+
+@app.route('/add_department', methods=['GET', 'POST'])
+@login_required
+def add_department():
+    form = DepartmentForm()
+    if form.validate_on_submit():
+        db_sess = db_session.create_session()
+        departments = Department()
+        departments.title = form.title.data
+        departments.chief = form.chief.data
+        departments.members = form.members.data
+        departments.email = form.email.data
+        db_sess.add(departments)
+        db_sess.commit()
+        return redirect('/departments')
+    return render_template('add_department.html', form=form, title="Adding department")
+
+
+@app.route('/edit_department/<int:id_department>', methods=['GET', 'POST'])
+@login_required
+def edit_department(id_department):
+    form = DepartmentForm()
+    if request.method == 'GET':
+        db_sess = db_session.create_session()
+        departments = db_sess.query(Department).filter(Department.id == id_department).first()
+        if departments and (departments.user.id == flask_login.current_user.id or flask_login.current_user.id == 1):
+            form.title.data = departments.title
+            form.chief.data = departments.chief
+            form.members.data = departments.members
+            form.email.data = departments.email
+        else:
+            abort(404)
+    if form.validate_on_submit():
+        db_sess = db_session.create_session()
+        departments = db_sess.query(Department).filter(Department.id == id_department).first()
+        if departments and (departments.user.id == flask_login.current_user.id or flask_login.current_user.id == 1):
+            departments.title = form.title.data
+            departments.chief = form.chief.data
+            departments.members = form.members.data
+            departments.email = form.email.data
+            db_sess.commit()
+            return redirect('/departments')
+        else:
+            abort(404)
+    return render_template('add_department.html', form=form, title="Editing department")
+
+
+@app.route('/delete_department/<int:id_department>', methods=['GET', 'POST'])
+@login_required
+def delete_department(id_department):
+    db_sess = db_session.create_session()
+    departments = db_sess.query(Department).filter(Department.id == id_department).first()
+    if departments and (departments.user.id == flask_login.current_user.id or flask_login.current_user.id == 1):
+        db_sess.delete(departments)
+        db_sess.commit()
+    else:
+        abort(404)
+    return redirect('/departments')
 
 
 def main():

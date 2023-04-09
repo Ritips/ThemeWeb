@@ -1,0 +1,37 @@
+{% extends "main.html" %}
+
+{% block content %}
+<h2 align="center">List of Departments</h2>
+{% if current_user.is_authenticated %}
+<div>
+    <a href="/" class="btn btn-secondary">Back to Jobs</a>
+    <a href="/add_department" class="btn btn-secondary">Add a Department</a>
+</div>
+{% else %}
+    <a href="/" class="btn btn-secondary">Back to Jobs</a>
+{% endif %}
+{% for item in elements %}
+    <h3 align="left">Department #{{ loop.index }}</h3>
+    <table align="left" width="100%" style="text-align: center;">
+        <tr>
+            <td bgcolor="#dedede" width="25%">Title od department</td>
+            <td bgcolor="#dedede" width="25%">Chief</td>
+            <td bgcolor="#dedede" width="25%">Members</td>
+            <td bgcolor="#dedede" width="25%">Department email</td>
+        </tr>
+        <tr>
+            <td bgcolor="#eeefff" width="25%">{{ item.title }}</td>
+            <td bgcolor="#eeefff" width="25%">{{ item.user.name }} {{ item.user.surname }}</td>
+            <td bgcolor="#eeefff" width="25%">{{ item.members }}</td>
+            <td bgcolor="#eeefff" width="25%">{{ item.email }}</td>
+        </tr>
+    </table>
+    {% if current_user.is_authenticated and (item.id == current_user.id or current_user.id == 1) %}
+        <div style="margin-top: 5%">
+            <a class="btn btn-warning" href="/edit_department/{{ item.id }}">Edit Department</a>
+            <a class="btn btn-danger" href="/delete_department/{{ item.id }}">Delete Department</a>
+        </div>
+    {% endif %}
+{% endfor %}
+
+{% endblock %}
