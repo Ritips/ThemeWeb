@@ -10,6 +10,14 @@
     <title>{{  title  }}</title>
 </head>
 <body>
+    {% if current_user.is_authenticated %}
+    <a class="navbar-brand" style="color: red; margin:90%;" href="/logout">{{ current_user.name }}</a>
+    {% else %}
+    <p align="right">
+        <a class="btn btn-primary " href="/register">Sign up</a>
+        <a class="btn btn-success" href="/login">Sign in</a>
+    </p>
+    {% endif %}
     <h1>Mission Colonisation Mars</h1>
     <h4 class="alert alert-light">Apple trees will blossom there</h4>
 <main role="main" class="container">
