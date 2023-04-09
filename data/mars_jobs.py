@@ -19,3 +19,7 @@ class Jobs(SqAlchemyBase):
 
     def __repr__(self):
         return f'<Job> {self.job}'
+
+    def set_information(self, team_leader, job, work_size, collaborators, start_date, end_date, is_finished):
+        self.team_leader, self.job, self.work_size, self.collaborators = team_leader, job, work_size, collaborators
+        self.start_date, self.end_date, self.is_finished = start_date, end_date, is_finished

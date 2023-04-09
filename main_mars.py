@@ -10,6 +10,7 @@ from forms.mars_user import RegisterMarsForm
 from flask import request, make_response, session, redirect
 from flask_login import LoginManager, login_user, login_required, logout_user
 from forms.mars_loginform import LoginForm
+from forms.mars_job import JobForm
 
 app = Flask(__name__)
 app.config["SECRET_KEY"] = 'yandex_lyceum_secret_key'
@@ -119,6 +120,25 @@ def login():
 def logout():
     logout_user()
     return redirect("/")
+
+
+@app.route('/addjob', methods=['GET', 'POST'])
+@login_required
+def adding_job():
+    form = JobForm()
+    if form.validate_on_submit():
+        db_sess = db_session.create_session()
+        jobs = Jobs()
+        start_date = form.start_date.data
+        work_size = form.work_size.data
+        end_date = start_date + datetime.timedelta(hours=work_size)
+        jobs.set_information(job=form.job.data, team_leader=form.team_leader.data, start_date=start_date,
+                             work_size=work_size, end_date=end_date,
+                             is_finished=form.is_finished.data, collaborators=form.collaborators.data)
+        db_sess.add(jobs)
+        db_sess.commit()
+        return redirect('/')
+    return render_template('mars_add_job.html', title="Adding Job", form=form)
 
 
 def main():
