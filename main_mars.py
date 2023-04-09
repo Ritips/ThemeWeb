@@ -7,7 +7,7 @@ from data.mars_jobs import Jobs
 from data.mars_departments import Department
 from flask import Flask, render_template
 from forms.mars_user import RegisterMarsForm
-from flask import request, make_response, session, redirect
+from flask import request, make_response, session, redirect, abort
 from flask_login import LoginManager, login_user, login_required, logout_user
 from forms.mars_loginform import LoginForm
 from forms.mars_job import JobForm
@@ -139,6 +139,40 @@ def adding_job():
         db_sess.commit()
         return redirect('/')
     return render_template('mars_add_job.html', title="Adding Job", form=form)
+
+
+@app.route('/editjob/<int:job_id>', methods=['GET', 'POST'])
+@login_required
+def edit_job(job_id):
+    form = JobForm()
+    if request.method == 'GET':
+        db_sess = db_session.create_session()
+        jobs = db_sess.query(Jobs).filter(Jobs.id == job_id).first()
+        if jobs and jobs.user.id == flask_login.current_user.id:
+            form.job.data = jobs.job
+            form.team_leader.data = jobs.team_leader
+            form.collaborators.data = jobs.collaborators
+            form.start_date.data = jobs.start_date
+            form.work_size.data = jobs.work_size
+            form.is_finished.data = jobs.is_finished
+        else:
+            abort(404)
+    if form.validate_on_submit():
+        db_sess = db_session.create_session()
+        jobs = db_sess.query(Jobs).filter(Jobs.id == job_id).first()
+        if jobs and (jobs.user.id == flask_login.current_user.id or flask_login.current_user.id == 1):
+            jobs.job = form.job.data
+            jobs.team_leader = form.team_leader.data
+            jobs.start_date = form.start_date.data
+            jobs.collaborators = form.collaborators.data
+            jobs.work_size = form.work_size.data
+            jobs.is_finished = form.is_finished.data
+            jobs.end_date = form.start_date.data + datetime.timedelta(hours=form.work_size.data)
+            db_sess.commit()
+            return redirect('/')
+        else:
+            abort(404)
+    return render_template('mars_add_job.html', title="Edit job", form=form)
 
 
 def main():
