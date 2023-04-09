@@ -109,10 +109,10 @@ def login():
         if user and user.check_password(form.password.data):
             login_user(user, remember=form.remember_me.data)
             return redirect("/")
-        return render_template('example_loginform.html',
-                               message="Неправильный логин или пароль",
+        return render_template('mars_loginform.html',
+                               message="Incorrect login or password",
                                form=form)
-    return render_template('example_loginform.html', title='Авторизация', form=form)
+    return render_template('mars_loginform.html', title='Authorisation', form=form)
 
 
 @app.route('/logout')
