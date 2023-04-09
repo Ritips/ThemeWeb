@@ -5,7 +5,7 @@ from .db_session import SqAlchemyBase
 class Categories(SqAlchemyBase):
     __tablename__ = 'category'
     id = sqlalchemy.Column(sqlalchemy.Integer, primary_key=True, autoincrement=True)
-    hazard_category = sqlalchemy.Column(sqlalchemy.Integer, default=1)
+    hazard_category = sqlalchemy.Column(sqlalchemy.Integer, default=1, unique=True)
 
     association_table = sqlalchemy.Table("categories_to_jobs",
                                          SqAlchemyBase.metadata,

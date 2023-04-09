@@ -12,6 +12,8 @@ from flask_login import LoginManager, login_user, login_required, logout_user
 from forms.mars_loginform import LoginForm
 from forms.mars_job import JobForm
 from forms.mars_department import DepartmentForm
+from forms.mars_categoriesform import CategoryForm
+from data.mars_categories import Categories
 
 app = Flask(__name__)
 app.config["SECRET_KEY"] = 'yandex_lyceum_secret_key'
@@ -67,7 +69,7 @@ def registration_user():
         user.set_password(form.password.data)
         db_sess.add(user)
         db_sess.commit()
-        return "Success"
+        return redirect('/')
     return render_template("mars_register.html", form=form, title="Registration")
 
 
@@ -254,6 +256,72 @@ def delete_department(id_department):
     else:
         abort(404)
     return redirect('/departments')
+
+
+@app.route('/categories')
+def show_categories():
+    db_sess = db_session.create_session()
+    categories = db_sess.query(Categories).all()
+    return render_template('mars_categories.html', elements=categories, title="List of categories",
+                           current_user=flask_login.current_user)
+
+
+@app.route('/add_category', methods=['GET', 'POST'])
+@login_required
+def add_category():
+    form = CategoryForm()
+    if form.validate_on_submit():
+        db_sess = db_session.create_session()
+        category = form.category.data
+        search_matches = db_sess.query(Categories).filter(Categories.hazard_category == category).first()
+        if search_matches:
+            return render_template('mars_add_category.html', form=form, title='Adding category',
+                                   message='Category already exists')
+        categories = Categories()
+        categories.hazard_category = category
+        db_sess.add(categories)
+        db_sess.commit()
+        return redirect('/categories')
+    return render_template('mars_add_category.html', form=form, title='Adding category')
+
+
+@app.route('/edit_category/<int:id_category>', methods=['GET', 'POST'])
+@login_required
+def edit_category(id_category):
+    form = CategoryForm()
+    if request.method == "GET":
+        db_sess = db_session.create_session()
+        categories = db_sess.query(Categories).filter(Categories.id == id_category).first()
+        if categories and flask_login.current_user.id == 1:
+            form.category.data = categories.hazard_category
+        else:
+            abort(404)
+    if form.validate_on_submit():
+        db_sess = db_session.create_session()
+        categories = db_sess.query(Categories).filter(Categories.id == id_category).first()
+        if categories and flask_login.current_user.id == 1:
+            categories.hazard_category = form.category.data
+            db_sess.commit()
+            return redirect('/categories')
+        else:
+            abort(404)
+    return render_template("mars_add_category.html", form=form, title="Editing category")
+
+
+@app.route('/delete_category/<int:id_category>', methods=['GET', 'POST'])
+@login_required
+def delete_category(id_category):
+    if flask_login.current_user.id == 1:
+        db_sess = db_session.create_session()
+        categories = db_sess.query(Categories).filter(Categories.id == id_category).first()
+        if categories:
+            db_sess.delete(categories)
+            db_sess.commit()
+        else:
+            abort(404)
+    else:
+        abort(404)
+    return redirect('/categories')
 
 
 def main():

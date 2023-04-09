@@ -16,7 +16,7 @@ class Jobs(SqAlchemyBase):
     is_finished = sqlalchemy.Column(sqlalchemy.Boolean)
 
     user = orm.relationship('User')
-    categories = orm.relationship("Category", secondary="jobs_to_categories", backref="jobs")
+    categories = orm.relationship("Categories", secondary="categories_to_jobs", backref="jobs")
 
     def __repr__(self):
         return f'<Job> {self.job}'

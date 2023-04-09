@@ -5,10 +5,12 @@
 {% if current_user.is_authenticated %}
 <div>
     <a href="/" class="btn btn-secondary">Back to Jobs</a>
+    <a href="/categories" class="btn btn-secondary">Back to Categories</a>
     <a href="/add_department" class="btn btn-secondary">Add a Department</a>
 </div>
 {% else %}
     <a href="/" class="btn btn-secondary">Back to Jobs</a>
+    <a href="/categories" class="btn btn-secondary">Back to Categories</a>
 {% endif %}
 {% for item in elements %}
     <h3 align="left">Department #{{ loop.index }}</h3>

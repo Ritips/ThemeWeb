@@ -1,0 +1,35 @@
+{% extends "main.html" %}
+
+{% block content %}
+<h2 align="center">List of categories</h2>
+{% if current_user.is_authenticated and current_user.id == 1%}
+    <div>
+        <a class="btn btn-secondary" href="/" style="margin-top: 1%; margin-bottom: 1%">Back to Jobs</a>
+        <a class="btn btn-secondary" href="/departments" style="margin-top: 1%; margin-bottom: 1%">Back to Departments</a>
+        <a class="btn btn-secondary" href="/add_category" style="margin-top: 1%; margin-bottom: 1%">Add Category</a>
+    </div>
+{% else %}
+    <div>
+        <a class="btn btn-secondary" href="/" style="margin-top: 1%; margin-bottom: 1%">Back to Jobs</a>
+        <a class="btn btn-secondary" href="/departments" style="margin-top: 1%; margin-bottom: 1%">Back to Departments</a>
+    </div>
+{% endif %}
+{% for item in elements %}
+<table align="left" width="100%" style="text-align: center">
+    <tr>
+        <td width="50%" bgcolor="#dedede">id category</td>
+        <td width="50%" bgcolor="#dedede">hazard level</td>
+    </tr>
+    <tr>
+        <td width="50%" bgcolor="#eeefff">{{ item.id }}</td>
+        <td width="50%" bgcolor="#eeefff">{{ item.hazard_category }}</td>
+    </tr>
+</table>
+{% if current_user.is_authenticated and current_user.id == 1 %}
+    <div>
+        <a class="btn btn-warning" href="/edit_category/{{ item.id }}">Edit Category</a>
+        <a class="btn btn-danger" href="/delete_category/{{ item.id }}">Delete Category</a>
+    </div>
+{% endif %}
+{% endfor %}
+{% endblock %}
