@@ -122,7 +122,7 @@ def logout():
     return redirect("/")
 
 
-@app.route('/addjob', methods=['GET', 'POST'])
+@app.route('/add_job', methods=['GET', 'POST'])
 @login_required
 def adding_job():
     form = JobForm()
@@ -141,7 +141,7 @@ def adding_job():
     return render_template('mars_add_job.html', title="Adding Job", form=form)
 
 
-@app.route('/editjob/<int:job_id>', methods=['GET', 'POST'])
+@app.route('/edit_job/<int:job_id>', methods=['GET', 'POST'])
 @login_required
 def edit_job(job_id):
     form = JobForm()
@@ -175,7 +175,7 @@ def edit_job(job_id):
     return render_template('mars_add_job.html', title="Edit job", form=form)
 
 
-@app.route('/deletejob/<int:job_id>', methods=["GET", 'POST'])
+@app.route('/delete_job/<int:job_id>', methods=["GET", 'POST'])
 @login_required
 def delete_job(job_id):
     db_sess = db_session.create_session()
