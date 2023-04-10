@@ -11,5 +11,5 @@ class JobForm(FlaskForm):
     start_date = DateTimeField("Start date(format: %Y-%m-%d %H:%M:%S)", default=dt.now(), validators=[DataRequired()])
     work_size = IntegerField("Work size", validators=[DataRequired()])
     is_finished = BooleanField("Is finished")
+    category = IntegerField("Job category")
     submit = SubmitField("Confirm")
-

@@ -138,6 +138,11 @@ def adding_job():
         jobs.set_information(job=form.job.data, team_leader=form.team_leader.data, start_date=start_date,
                              work_size=work_size, end_date=end_date,
                              is_finished=form.is_finished.data, collaborators=form.collaborators.data)
+        category = form.category.data
+        get_category = db_sess.query(Categories).filter(Categories.hazard_category == category).first()
+        if not get_category:
+            return render_template("mars_add_job.html", title="Adding job", form=form, message="Category doesn't exist")
+        jobs.categories.append(get_category)
         db_sess.add(jobs)
         db_sess.commit()
         return redirect('/')
@@ -151,13 +156,16 @@ def edit_job(job_id):
     if request.method == 'GET':
         db_sess = db_session.create_session()
         jobs = db_sess.query(Jobs).filter(Jobs.id == job_id).first()
-        if jobs and jobs.user.id == flask_login.current_user.id:
+        if jobs and (jobs.user.id == flask_login.current_user.id or flask_login.current_user.id == 1):
             form.job.data = jobs.job
             form.team_leader.data = jobs.team_leader
             form.collaborators.data = jobs.collaborators
             form.start_date.data = jobs.start_date
             form.work_size.data = jobs.work_size
             form.is_finished.data = jobs.is_finished
+            categories = [el.hazard_category for el in jobs.categories]
+            if categories:
+                form.category.data = categories[0]
         else:
             abort(404)
     if form.validate_on_submit():
@@ -171,6 +179,13 @@ def edit_job(job_id):
             jobs.work_size = form.work_size.data
             jobs.is_finished = form.is_finished.data
             jobs.end_date = form.start_date.data + datetime.timedelta(hours=form.work_size.data)
+            form_category = form.category.data
+            get_category = db_sess.query(Categories).filter(Categories.hazard_category == form_category).first()
+            if get_category:
+                categories = [el for el in jobs.categories]
+                if categories:
+                    jobs.categories.remove(categories[0])
+                jobs.categories.append(get_category)
             db_sess.commit()
             return redirect('/')
         else:
@@ -331,3 +346,10 @@ def main():
 
 if __name__ == '__main__':
     main()
+
+
+'''
+Added Categories + Interface for categories (add/delete/show)
+WARNING: Categories and Jobs ARE NOT CONNECTED!!
+WARNING: ADVANCED FIELDS ARE NOT ADDED TO JOB FORM!!
+'''
