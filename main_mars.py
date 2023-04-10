@@ -346,10 +346,3 @@ def main():
 
 if __name__ == '__main__':
     main()
-
-
-'''
-Added Categories + Interface for categories (add/delete/show)
-WARNING: Categories and Jobs ARE NOT CONNECTED!!
-WARNING: ADVANCED FIELDS ARE NOT ADDED TO JOB FORM!!
-'''
