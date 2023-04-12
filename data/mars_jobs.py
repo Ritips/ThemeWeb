@@ -1,9 +1,10 @@
 import sqlalchemy
+from sqlalchemy_serializer import SerializerMixin
 from sqlalchemy import orm
 from .db_session import SqAlchemyBase
 
 
-class Jobs(SqAlchemyBase):
+class Jobs(SqAlchemyBase, SerializerMixin):
     __tablename__ = 'jobs'
 
     id = sqlalchemy.Column(sqlalchemy.Integer, primary_key=True, autoincrement=True)

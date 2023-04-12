@@ -1,13 +1,12 @@
 import flask_login
-from data import db_session
+from data import db_session, jobs_api, users_api
 import datetime
-from datetime import datetime as dt
 from data.mars_user import User
 from data.mars_jobs import Jobs
 from data.mars_departments import Department
 from flask import Flask, render_template
 from forms.mars_user import RegisterMarsForm
-from flask import request, make_response, session, redirect, abort
+from flask import request, make_response, session, redirect, abort, jsonify
 from flask_login import LoginManager, login_user, login_required, logout_user
 from forms.mars_loginform import LoginForm
 from forms.mars_job import JobForm
@@ -15,32 +14,12 @@ from forms.mars_department import DepartmentForm
 from forms.mars_categoriesform import CategoryForm
 from data.mars_categories import Categories
 
+
 app = Flask(__name__)
 app.config["SECRET_KEY"] = 'yandex_lyceum_secret_key'
 app.config['PERMANENT_SESSION_LIFETIME'] = datetime.timedelta(days=365)
 login_manager = LoginManager()
 login_manager.init_app(app)
-
-
-def add_person(db_sess, surname, name, age, position, speciality, address, email):
-    user = User()
-    user.set_information(surname=surname, name=name, age=age, position=position,
-                         speciality=speciality, address=address, email=email, modified_date=datetime.datetime.now())
-    db_sess.add(user)
-    db_sess.commit()
-
-
-def add_job(db_sess, team_leader, description_job, work_size, collaborators, start_date=dt.now(), is_finished=False):
-    job = Jobs(team_leader=team_leader, job=description_job, work_size=work_size, collaborators=collaborators,
-               start_date=dt.now(), is_finished=is_finished, end_date=start_date + datetime.timedelta(hours=work_size))
-    db_sess.add(job)
-    db_sess.commit()
-
-
-def add_department(db_sess, title, chief, members, email):
-    department = Department(title=title, chief=chief, members=members, email=email)
-    db_sess.add(department)
-    db_sess.commit()
 
 
 @app.route('/')
@@ -339,8 +318,20 @@ def delete_category(id_category):
     return redirect('/categories')
 
 
+@app.errorhandler(404)
+def not_found(_):
+    return make_response(jsonify({"error": "Not found"}), 404)
+
+
+@app.errorhandler(400)
+def bad_request(_):
+    return make_response(jsonify({"error": "Bad Request"}))
+
+
 def main():
     db_session.global_init('db/mars_explorer.db')
+    app.register_blueprint(jobs_api.blueprint)
+    app.register_blueprint(users_api.blueprint)
     app.run()
 
 
