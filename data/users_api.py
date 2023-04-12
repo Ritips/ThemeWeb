@@ -19,7 +19,8 @@ def get_all_users():
     return jsonify(
         {
             'users':
-                [item.to_dict(only=('id', 'surname', 'name', 'age', 'position', 'speciality', 'address', 'email'))
+                [item.to_dict(only=('id', 'surname', 'name', 'age', 'position',
+                                    'speciality', 'address', 'email', 'city_from'))
                  for item in users]
         }
     )
@@ -33,7 +34,8 @@ def get_user(id_user):
         return jsonify({"Error": "Not found"})
     return jsonify(
         {
-            'users': users.to_dict(only=('id', 'surname', 'name', 'age', 'position', 'speciality', 'address', 'email'))
+            'users': users.to_dict(only=('id', 'surname', 'name', 'age',
+                                         'position', 'speciality', 'address', 'email', 'city_from'))
         }
     )
 
@@ -44,7 +46,7 @@ def add_user():
         return jsonify({"Error": "No params"})
     elif not all(key in request.json for key in ('id', 'surname', 'name', 'age',
                                                  'position', 'speciality', 'address', 'email',
-                                                 'password')):
+                                                 'password', 'city_from')):
         return jsonify({"Error": "Bad request"})
     db_sess = db_session.create_session()
     users = db_sess.query(User).filter(User.id == request.json["id"]).first()
@@ -59,6 +61,7 @@ def add_user():
                           position=request.json["position"], speciality=request.json["speciality"],
                           address=request.json["address"], email=request.json["email"],
                           modified_date=datetime.datetime.now())
+    users.city_from = request.json["city_from"]
     users.set_password(request.json["password"])
     db_sess.add(users)
     db_sess.commit()
@@ -70,7 +73,7 @@ def edit_user(id_user):
     if not request.json:
         return jsonify({"Error": "No params"})
     elif not all(key in request.json for key in ('id', 'surname', 'name', 'age', 'position', 'speciality',
-                                                 'address', 'email', 'password')):
+                                                 'address', 'email', 'password', 'city_from')):
         return jsonify({"Error": "Bad request"})
     db_sess = db_session.create_session()
     user_to_edit = db_sess.query(User).filter(User.id == id_user).first()
@@ -87,6 +90,7 @@ def edit_user(id_user):
     user_to_edit.address = request.json["address"]
     user_to_edit.email = request.json["email"]
     user_to_edit.set_password(request.json["password"])
+    user_to_edit.city_from = request.json["city_from"]
     db_sess.commit()
     return jsonify({"success": "OK"})
 
@@ -100,5 +104,3 @@ def delete_user(id_user):
     db_sess.delete(user_to_delete)
     db_sess.commit()
     return jsonify({"success": "OK"})
-
-

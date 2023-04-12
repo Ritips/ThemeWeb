@@ -45,6 +45,7 @@ def registration_user():
         user.set_information(name=form.name.data, surname=form.surname.data, age=form.age.data,
                              position=form.position.data, speciality=form.speciality.data, address=form.address.data,
                              email=form.email.data, modified_date=datetime.datetime.now())
+        user.city_from = form.city_from.data
         user.set_password(form.password.data)
         db_sess.add(user)
         db_sess.commit()
@@ -326,6 +327,12 @@ def not_found(_):
 @app.errorhandler(400)
 def bad_request(_):
     return make_response(jsonify({"error": "Bad Request"}))
+
+
+@app.route('/users_show/<int:user_id>')
+@login_required
+def show_city_from(user_id):
+    return 'None'
 
 
 def main():
