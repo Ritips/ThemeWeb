@@ -42,44 +42,17 @@ def registration_user():
         if form.password.data != form.repeat_password.data:
             return render_template("mars_register.html", form=form,
                                    title="Registration", message="Password mismatch")
-        db_sess = db_session.create_session()
-        if db_sess.query(User).filter(User.email == form.email.data).first():
-            return render_template("mars_register.html", form=form,
-                                   title="Registration", message="User already exists")
-        user = User()
-        user.set_information(name=form.name.data, surname=form.surname.data, age=form.age.data,
-                             position=form.position.data, speciality=form.speciality.data, address=form.address.data,
-                             email=form.email.data, modified_date=datetime.datetime.now())
-        user.city_from = form.city_from.data
-        user.set_password(form.password.data)
-        db_sess.add(user)
-        db_sess.commit()
+        params = {
+            "name": form.name.data, "surname": form.surname.data, "age": form.age.data,
+            "position": form.position.data, "speciality": form.speciality.data, "address": form.address.data,
+            "email": form.email.data, "city_from": form.city_from.data, "password": form.password.data
+        }
+        response = requests.post('http://127.0.0.1:5000/api/v2/users', params=params)
+        if not response:
+            return render_template('mars_register.html', form=form,
+                                   title="Registration", message=response.json()["message"])
         return redirect('/')
     return render_template("mars_register.html", form=form, title="Registration")
-
-
-@app.route("/cookie_test")
-def cookie_test():
-    visits_count = int(request.cookies.get("visits_count", 0))
-    if visits_count:
-        res = make_response(
-            f"Вы пришли на эту страницу {visits_count + 1} раз")
-        res.set_cookie("visits_count", str(visits_count + 1),
-                       max_age=60 * 60 * 24 * 365 * 2)
-    else:
-        res = make_response(
-            "Вы пришли на эту страницу в первый раз за последние 2 года")
-        res.set_cookie("visits_count", '1',
-                       max_age=60 * 60 * 24 * 365 * 2)
-    return res
-
-
-@app.route("/session_test")
-def session_test():
-    visits_count = session.get('visits_count', 0)
-    session['visits_count'] = visits_count + 1
-    return make_response(
-        f"Вы пришли на эту страницу {visits_count + 1} раз")
 
 
 @login_manager.user_loader
@@ -331,7 +304,7 @@ def not_found(_):
 
 @app.errorhandler(400)
 def bad_request(_):
-    return make_response(jsonify({"error": "Bad Request"}))
+    return make_response(jsonify({"error": "Bad Request"}), 400)
 
 
 @app.route('/users_show/<int:user_id>')
