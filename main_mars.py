@@ -1,4 +1,5 @@
 import flask_login
+import data.users_resource
 from data import db_session, jobs_api, users_api
 import datetime
 from data.mars_user import User
@@ -13,11 +14,13 @@ from forms.mars_job import JobForm
 from forms.mars_department import DepartmentForm
 from forms.mars_categoriesform import CategoryForm
 from data.mars_categories import Categories
+from flask_restful import Api
 import requests
 import os
 
 
 app = Flask(__name__)
+api = Api(app)
 app.config["SECRET_KEY"] = 'yandex_lyceum_secret_key'
 app.config['PERMANENT_SESSION_LIFETIME'] = datetime.timedelta(days=365)
 login_manager = LoginManager()
@@ -369,9 +372,11 @@ def show_city_from(user_id):
 
 
 def main():
-    db_session.global_init('db/mars_explorer.db')
+    db_session.global_init('db/mars_explorer.sqlite')
     app.register_blueprint(jobs_api.blueprint)
     app.register_blueprint(users_api.blueprint)
+    api.add_resource(data.users_resource.UserResource, '/api/v2/users/<int:user_id>')
+    api.add_resource(data.users_resource.UserListResource, '/api/v2/users')
     app.run()
 
 
