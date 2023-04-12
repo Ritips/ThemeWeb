@@ -1,0 +1,8 @@
+{% extends "main.html" %}
+
+{% block content %}
+<h3 align="center">Nostalgy</h3>
+<h3 align="center">{{ info_user["name"] }} {{ info_user["surname"] }}</h3>
+<h4 align="center" style="font-size: 15px">Hometown {{ info_user["city_from"] }}</h4>
+<h5 align="center"><img align="center" src="/static/img/map_file.png" alt="Map file"></h5>
+{% endblock %}

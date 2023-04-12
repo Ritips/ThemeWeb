@@ -13,6 +13,8 @@ from forms.mars_job import JobForm
 from forms.mars_department import DepartmentForm
 from forms.mars_categoriesform import CategoryForm
 from data.mars_categories import Categories
+import requests
+import os
 
 
 app = Flask(__name__)
@@ -332,7 +334,38 @@ def bad_request(_):
 @app.route('/users_show/<int:user_id>')
 @login_required
 def show_city_from(user_id):
-    return 'None'
+    user_info = requests.get(f'http://127.0.0.1:5000/api/users/{user_id}').json()
+    try:
+        geocoder_api_server = "http://geocode-maps.yandex.ru/1.x/"
+        geocoder_params = {
+            "apikey": "40d1649f-0493-4b70-98ba-98533de7710b",
+            "geocode": user_info["users"]["city_from"],
+            "format": "json"}
+        response = requests.get(geocoder_api_server, params=geocoder_params)
+        if not response:
+            return response, response.url
+        json_object = response.json()
+        toponym = json_object["response"]["GeoObjectCollection"]["featureMember"][0]["GeoObject"]
+        point = toponym["Point"]["pos"].split()
+        envelope = toponym["boundedBy"]["Envelope"]
+        lower_corner = tuple(map(float, envelope["lowerCorner"].split()))
+        upper_corner = tuple(map(float, envelope["upperCorner"].split()))
+        spn = (abs(lower_corner[0] - upper_corner[0]), abs(lower_corner[1] - upper_corner[1]))
+        map_api_server = "http://static-maps.yandex.ru/1.x/"
+        map_params = {
+            "ll": f"{point[0]},{point[1]}",
+            "spn": f"{spn[0]},{spn[1]}",
+            "l": 'sat',
+        }
+        map_response = requests.get(map_api_server, params=map_params)
+        if not map_response:
+            return map_response, map_response.url
+        path = os.path.join('static/img', 'map_file.png')
+        with open(path, 'wb') as f:
+            f.write(map_response.content)
+        return render_template("show_native_city.html", title="Hometown", info_user=user_info["users"])
+    except KeyError:
+        return user_info
 
 
 def main():
