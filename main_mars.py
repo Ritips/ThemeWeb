@@ -7,13 +7,14 @@ from data.mars_jobs import Jobs
 from data.mars_departments import Department
 from flask import Flask, render_template
 from forms.mars_user import RegisterMarsForm
-from flask import request, make_response, session, redirect, abort, jsonify
+from flask import request, make_response, redirect, abort, jsonify
 from flask_login import LoginManager, login_user, login_required, logout_user
 from forms.mars_loginform import LoginForm
 from forms.mars_job import JobForm
 from forms.mars_department import DepartmentForm
 from forms.mars_categoriesform import CategoryForm
 from data.mars_categories import Categories
+import data.jobs_resource
 from flask_restful import Api
 import requests
 import os
@@ -88,21 +89,15 @@ def logout():
 def adding_job():
     form = JobForm()
     if form.validate_on_submit():
-        db_sess = db_session.create_session()
-        jobs = Jobs()
-        start_date = form.start_date.data
-        work_size = form.work_size.data
-        end_date = start_date + datetime.timedelta(hours=work_size)
-        jobs.set_information(job=form.job.data, team_leader=form.team_leader.data, start_date=start_date,
-                             work_size=work_size, end_date=end_date,
-                             is_finished=form.is_finished.data, collaborators=form.collaborators.data)
-        category = form.category.data
-        get_category = db_sess.query(Categories).filter(Categories.hazard_category == category).first()
-        if not get_category:
-            return render_template("mars_add_job.html", title="Adding job", form=form, message="Category doesn't exist")
-        jobs.categories.append(get_category)
-        db_sess.add(jobs)
-        db_sess.commit()
+        params = {
+            "job": form.job.data, "team_leader": form.team_leader.data, "start_date": str(form.start_date.data),
+            "work_size": form.work_size.data, "is_finished": form.is_finished.data,
+            "collaborators": form.collaborators.data
+        }
+        response = requests.post('http://127.0.0.1:5000/api/v2/jobs', params=params)
+        if not response:
+            return render_template('mars_add_job.html', title="Adding Job", form=form,
+                                   message=response.json()["message"])
         return redirect('/')
     return render_template('mars_add_job.html', title="Adding Job", form=form)
 
@@ -154,13 +149,7 @@ def edit_job(job_id):
 @app.route('/delete_job/<int:job_id>', methods=["GET", 'POST'])
 @login_required
 def delete_job(job_id):
-    db_sess = db_session.create_session()
-    jobs = db_sess.query(Jobs).filter(Jobs.id == job_id).first()
-    if jobs and (jobs.user.id == flask_login.current_user.id or flask_login.current_user.id == 1):
-        db_sess.delete(jobs)
-        db_sess.commit()
-    else:
-        abort(404)
+    requests.delete(f'http://127.0.0.1:5000/api/v2/jobs/{job_id}')
     return redirect('/')
 
 
@@ -350,6 +339,8 @@ def main():
     app.register_blueprint(users_api.blueprint)
     api.add_resource(data.users_resource.UserResource, '/api/v2/users/<int:user_id>')
     api.add_resource(data.users_resource.UserListResource, '/api/v2/users')
+    api.add_resource(data.jobs_resource.JobsResource, '/api/v2/jobs/<int:job_id>')
+    api.add_resource(data.jobs_resource.JobsListResource, '/api/v2/jobs')
     app.run()
 
 
